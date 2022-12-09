@@ -19,12 +19,18 @@ typedef unsigned long h_font;
 typedef unsigned int crc32_t;
 #define p_void PVOID
 
-typedef unsigned int EntityId;
+bool bounds_check(void* ptr, DWORD64 minV, DWORD64 maxV) {
+	return (DWORD64)ptr > minV && (DWORD64)ptr < maxV;
+}
 
-DWORD64 dwSystemGlobalEnvironment = 0x142262698;
-//DWORD64 dwRequestShootHitBegin = 0x141473C10;
-//DWORD64 dwRequestShootHitEnd = 0x1424FD578;
-DWORD64 dwCHUDSilhouettes = 0x1416D6F00;
+bool is_valid_ptr(void* ptr) {
+	if (!ptr) {
+		return false;
+	}
+	return bounds_check(ptr, 0x100000, 0xFFFFFFFFFFFF);
+}
+
+typedef unsigned int EntityId;
 
 typedef struct LDR_DATA_TABLE_ENTRY_FIX
 {
@@ -1037,3 +1043,64 @@ enum EFlowchartState {
 	eFS_PostGame = 0x9,
 	eFS_Count = 0xA,
 };
+
+namespace Globals {
+	bool ShowMenu = true;
+	bool MenuMovement = false;
+
+	/*bool pAutoShot = false;
+	bool ShootBullet = false;*/
+	// Weapon Tab
+	bool pRecoil = false;
+	bool pSpread = false;
+	bool pChangeWeapons = false;
+	bool pNoSway = false;
+	// AimBot Tab
+	bool pSilentAim = false;
+	int fSilentRadius = 0;
+	int iSilentPart = 0;
+	int iSilentFovR = 100;
+	int iSilentFovG = 100;
+	int iSilentFovB = 100;
+	// Visual Tab
+	bool SilhouetteWeapon = false;
+	bool SilhouetteEnemy = false;
+	bool Skeleton = false;
+	bool Name = false;
+	bool HP = false;
+	bool Weapon = false;
+	bool Snapline = false;
+	int iVisibleVisualR = 100;
+	int iVisibleVisualG = 100;
+	int iVisibleVisualB = 100;
+	int iInvisibleVisualR = 100;
+	int iInvisibleVisualG = 100;
+	int iInvisibleVisualB = 100;
+	// Misc tab
+	int SpawnObject = 0;
+	int MaterialEdit = 0;
+	bool Materials = false;
+	const wchar_t* GetMaterial() {
+		return L"";
+		/*return std::vector<const wchar_t*>
+		{
+			(L"Выкл"), (L"vault_50_20cm"), (L"vault_75_40cm"), (L"vault_100_40cm"),
+				(L"vault_200_60cm"), (L"vault_400_20cm"), (L"climb_200_50cm"), (L"climb_200_100cm"),
+				(L"climb_200_200cm"), (L"climb_380_50cm"), (L"climb_380_100cm"), (L"climb_380_200cm")
+		} [SpawnObject] ;*/
+	}
+	const wchar_t* GetSpawnObject() {
+		return L"";
+		/*return std::vector<const wchar_t*>
+		{
+			(L"Выкл"), (L"cells_effect"), (L"forcefield_core"), (L"forcefield_ufo"), (L"forcefield_mars"), (L"forcefield_boss"), (L"forcefield_bw")
+		} [MaterialEdit] ;*/
+	}
+
+	void SaveCFG() {
+
+	}
+	void LoadFromCFG() {
+
+	}
+}

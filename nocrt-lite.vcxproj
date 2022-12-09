@@ -163,7 +163,9 @@
     <ClCompile Include="dllmain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CRT.h" />
     <ClInclude Include="Data.h" />
+    <ClInclude Include="Hook.h" />
     <ClInclude Include="SDK.h" />
     <ClInclude Include="spoofcall\spoof_call.hpp" />
     <ClInclude Include="xor\Xor.h" />
