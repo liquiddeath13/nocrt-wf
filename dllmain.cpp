@@ -12,8 +12,6 @@
 
 #include "SDK.h"
 
-
-
 bool bounds_check(void* ptr, DWORD64 minV, DWORD64 maxV) {
 	return (DWORD64)ptr > minV && (DWORD64)ptr < maxV;
 }
@@ -27,9 +25,8 @@ bool is_valid_ptr(void* ptr) {
 
 class SilentAimPayload : public GameSDK::IGameFrameworkListener {
 	DWORD silentFov = 150;
-	bool autofire = true;
+	bool autofire = false;
 public:
-	SilentAimPayload() {}
 	void OnPreRender() {
 		auto pSSGE = *(GameSDK::SSystemGlobalEnvironment**)dwSystemGlobalEnvironment;
 		auto pEntityIterator = pSSGE->GetIEntitySystem()->GetEntityIterator();
@@ -119,10 +116,11 @@ class WHPayload : public GameSDK::IGameFrameworkListener {
 		SetVisionParams(pEntId, dead ? deadColor : visible ? VisibleColor : InvisibleColor);
 	}
 public:
-	WHPayload() {}
 	void OnPreRender() {
 		auto pSSGE = *(GameSDK::SSystemGlobalEnvironment**)dwSystemGlobalEnvironment;
-		auto pEntityIterator = pSSGE->GetIEntitySystem()->GetEntityIterator();
+		auto pIEntitySystem = pSSGE->GetIEntitySystem();
+		if (!is_valid_ptr(pIEntitySystem)) return;
+		auto pEntityIterator = pIEntitySystem->GetEntityIterator();
 		if (!is_valid_ptr(pEntityIterator)) return;
 		auto pLocalActor = pSSGE->GetIGame()->GetIGameFramework()->GetLocalActor();
 		if (!is_valid_ptr(pLocalActor)) return;
@@ -166,6 +164,52 @@ public:
 	}
 };
 
+class MiscPayload : public GameSDK::IGameFrameworkListener {
+public:
+	void OnPreRender() {
+		auto pSSGE = *(GameSDK::SSystemGlobalEnvironment**)dwSystemGlobalEnvironment;
+		auto pIGame = pSSGE->GetIGame();
+		if (!pIGame) return;
+		auto pPlayerStatus = pIGame->GetPlayerStatus();
+		if (!pPlayerStatus) return;
+
+		pPlayerStatus->SetAfkTime(0);
+	}
+};
+
+class WeaponPayload : public GameSDK::IGameFrameworkListener {
+public:
+	void OnPreRender() {
+		auto pSSGE = *(GameSDK::SSystemGlobalEnvironment**)dwSystemGlobalEnvironment;
+		auto pIGame = pSSGE->GetIGame();
+		if (!pIGame) return;
+		auto pLocalActor = pIGame->GetIGameFramework()->GetLocalActor();
+
+		if (!is_valid_ptr(pLocalActor)) return;
+		if (pLocalActor->IsDead()) return;
+
+		GameSDK::IItem* currItem = pLocalActor->GetCurrentItem();
+		if (!is_valid_ptr(currItem)) return;
+		GameSDK::IWeapon* currWeapon = currItem->GetWeapon();
+		if (!is_valid_ptr(currWeapon)) return;
+		GameSDK::CWeaponGeneral* currWeaponGeneral = currWeapon->GetWeaponGeneral();
+		if (!is_valid_ptr(currWeaponGeneral)) return;
+		GameSDK::IWeaponParameters* currWeaponParams = currWeaponGeneral->GetParameters();
+		if (!is_valid_ptr(currWeaponParams)) return;
+
+		currWeaponParams->SetValue(EGameStatType::eGS_SprdMax, 0.f);
+		currWeaponParams->SetValue(EGameStatType::eGS_SprdMin, 0.f);
+		currWeaponParams->SetValue(EGameStatType::eGS_SprdAtt, 0.f);
+		currWeaponParams->SetValue(EGameStatType::eGS_SprdDec, 0.f);
+
+		currWeaponParams->SetValue(EGameStatType::eGS_RclMax, 0.f);
+		currWeaponParams->SetValue(EGameStatType::eGS_RclSmth, 0.f);
+		currWeaponParams->SetValue(EGameStatType::eGS_RclRnd, 0.f);
+		currWeaponParams->SetValue(EGameStatType::eGS_RclAtt, 0.f);
+		currWeaponParams->SetValue(EGameStatType::eGS_RclDec, 0.f);
+	}
+};
+
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
                        LPVOID lpReserved
@@ -180,6 +224,8 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 
 		pGameFramework->RegisterListener(new WHPayload(), 0, GameSDK::EFRAMEWORKLISTENERPRIORITY::FRAMEWORKLISTENERPRIORITY_GAME);
 		pGameFramework->RegisterListener(new SilentAimPayload(), 0, GameSDK::EFRAMEWORKLISTENERPRIORITY::FRAMEWORKLISTENERPRIORITY_GAME);
+		pGameFramework->RegisterListener(new WeaponPayload(), 0, GameSDK::EFRAMEWORKLISTENERPRIORITY::FRAMEWORKLISTENERPRIORITY_GAME);
+		pGameFramework->RegisterListener(new MiscPayload(), 0, GameSDK::EFRAMEWORKLISTENERPRIORITY::FRAMEWORKLISTENERPRIORITY_GAME);
     }
     return TRUE;
 }

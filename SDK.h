@@ -424,20 +424,21 @@ namespace GameSDK {
 	class CWeaponGeneral
 	{
 	public:
-		IWeaponParameters* GetParameters() { return *(IWeaponParameters**)((uintptr_t)this + 184); }
-		IClipMode* GetClipMode() { return *(IClipMode**)((uintptr_t)this + 192); }
+		IWeaponParameters* GetParameters() { 
+			return v_spoof<IWeaponParameters*>(this, 3);
+		}
 		bool IsFiring() {
-			uintptr_t state = *(uintptr_t*)((uintptr_t)this + 272);
-			return (EWeaponStates)state == EWeaponStates::eWS_Fire
-				|| (EWeaponStates)state == EWeaponStates::eWS_FireUnderBarrel
-				|| (EWeaponStates)state == EWeaponStates::eWS_ThrowingFire
-				|| (EWeaponStates)state == EWeaponStates::eWS_ThrowingFireActivate
-				|| (EWeaponStates)state == EWeaponStates::eWS_ZoomedFire
-				|| (EWeaponStates)state == EWeaponStates::eWS_ZoomInFire
-				|| (EWeaponStates)state == EWeaponStates::eWS_ZoomOutFire
-				|| (EWeaponStates)state == EWeaponStates::eWS_DropAmmoPack
-				|| (EWeaponStates)state == EWeaponStates::eWS_Resurrect
-				|| (EWeaponStates)state == EWeaponStates::eWS_HoldFireUnderBarrel;
+			EWeaponStates state = v_spoof<EWeaponStates>(this, 6);
+			return state == EWeaponStates::eWS_Fire
+				|| state == EWeaponStates::eWS_FireUnderBarrel
+				|| state == EWeaponStates::eWS_ThrowingFire
+				|| state == EWeaponStates::eWS_ThrowingFireActivate
+				|| state == EWeaponStates::eWS_ZoomedFire
+				|| state == EWeaponStates::eWS_ZoomInFire
+				|| state == EWeaponStates::eWS_ZoomOutFire
+				|| state == EWeaponStates::eWS_DropAmmoPack
+				|| state == EWeaponStates::eWS_Resurrect
+				|| state == EWeaponStates::eWS_HoldFireUnderBarrel;
 		}
 		bool IsZooming() {
 			uintptr_t state = *(uintptr_t*)((uintptr_t)this + 272);
